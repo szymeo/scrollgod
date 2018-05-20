@@ -1,6 +1,6 @@
 'use strict';
 
-const scrollGod = new ScrollGod.Square({
+const scrollGod = new ScrollGod.Carousel({
     parentSelector: '#scrollgod',
     elemSelector: '.scrollgod-apply',
     speed: '1000', // in miliseconds

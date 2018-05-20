@@ -2,67 +2,45 @@
 var ScrollGod = (function (exports) {
     'use strict';
 
+    let cardStyle = {
+        'display': 'block',
+        'position': 'absolute',
+        'background-color': '#1565c0',
+        'width': '550px',
+        'height': '200px',
+        'text-align': 'center',
+        'color': '#FFF',
+        'opacity': '0.95',
+        'border-radius': '2px'
+    };
+
+    let carouselStyle = {
+        'height': '100%',
+        'width': '100%',
+        'position': 'absolute',
+        'transform-style': 'preserve-3d',
+        'transform': 'translateX(-50%)'
+    };
+
+    function setupCarousel(options) {
+        let _this = {};
+        _this.cards = getCards(options.elemSelector);
+        _this.cards.forEach((card) => applyStyles(card, { ...cardStyle, ...options.cardStyle }));
+        _this.cards = createDefaultRotation(_this.cards, options.direction = 'X');
+
+        _this.parent = getParent(options.parentSelector);
+        _this.parent = applyStyles(_this.parent, carouselStyle);
+        _this.parent.style.transition = `transform ${options.speed/1000}s`;
+
+        return _this;
+    }
+
     function getCards(selector) {
         return document.querySelectorAll(selector)
     }
 
     function getParent(selector) {
         return document.querySelector(selector)
-    }
-
-    function createDefaultRotation(cards) {
-        cards.forEach((el, i) => {
-            el.style.transform = `rotateX(${(i+1)*360/cards.length}deg) translateZ(350px)`;
-        });
-    }
-
-    function rotateX(el, deg) {
-        el.style["-webkit-transform"] = `rotateX(${deg}deg)`;
-        el.style["-moz-transform"] = `rotateX(${deg}deg)`;
-        el.style["-o-transform"] = `rotateX(${deg}deg)`;
-        el.style["transform"] = `rotateX(${deg}deg) translateX(-50%)`;
-    }
-
-    class Scroll {
-        constructor(options) {
-            console.log(options);
-            // this.options = Object.assign({}, defaultOptions, options);
-            this.cards = getCards(options.elemSelector);
-            this.parent = getParent(options.parentSelector);
-
-            window.onscroll = (e) => {
-                this.scrollY(e);
-            };
-        }
-
-        scrollY(e) {
-            console.log('eeee');
-        }
-
-        scrollX() { //todo
-        
-        }
-    }
-
-    function isElementInView(el, fullyInView) {
-        let pageTop = window.scrollY;
-        let pageBottom = pageTop + window.innerHeight;
-        let elementTop = el.offsetTop;
-        let elementBottom = elementTop + el.clientHeight;
-
-        if (fullyInView === true) {
-            return ((pageTop < elementTop) && (pageBottom > elementBottom));
-        } else {
-            return ((elementTop <= pageBottom) && (elementBottom >= pageTop));
-        }
-    }
-
-    function getScrolledCardsHeight(cards, index) {
-        let out = 0;
-        for(var i = 0; i < index; i++) {
-            out += cards[i].clientHeight;
-        }
-        return out;
     }
 
     function assignStyleToEl(el, style) {
@@ -88,71 +66,61 @@ var ScrollGod = (function (exports) {
         }
     }
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+    function createDefaultRotation(cards, dir) {
+        cards.forEach((el, i) => {
+            el.style.transform = `rotate${dir}(${(i+1)*360/cards.length}deg) translateZ(350px)`;
+        });
+
+        return cards;
     }
 
-    let cardStyle = {
-        'display': 'block',
-        'position': 'absolute',
-        'background-color': '#1565c0',
-        'width': '550px',
-        'height': '200px',
-        'text-align': 'center',
-        'color': '#FFF',
-        'opacity': '0.95',
-        'border-radius': '2px'
-    };
+    function wheelHandler(el, handler) {
+        el.addEventListener("wheel", handler);
+    }
 
-    let carouselStyle = {
-        'height': '100%',
-        'width': '100%',
-        'position': 'absolute',
-        'transform-style': 'preserve-3d',
-        'transform': 'translateX(-50%)'
-    };
-
-    class Square {
+    class Carousel {
         constructor(options) {
             this.options = options;
             this.currdeg = 0;
-            
-            this.cards = getCards(options.elemSelector);
-            this.parent = getParent(options.parentSelector);
-            this.cards.forEach((card) => applyStyles(card, { ...cardStyle, ...options.cardStyle }));
-            this.parent = applyStyles(this.parent, carouselStyle);
-            createDefaultRotation(this.cards);
+            const setup = setupCarousel(options);
+            console.log(setup);
+            for(var k in setup) {
+                console.log(k);
+                this[k] = setup[k];
+            }
 
-            this.parent.style.transition = `transform ${options.speed/1000}s`; // ill have to do sth with this
-
-            window.addEventListener("wheel", (e) => {
-                this.scrollY(e, this.cards);
+            wheelHandler(window, (e) => {
+                this.rotateX(e, this.cards);
             });
         }
 
-        scrollY(e, cards) {
+        rotateX(e, cards) {
             this.currdeg = e.deltaY < 0 ?
                 this.currdeg - 360/cards.length : 
                 this.currdeg + 360/cards.length;
 
-            rotateX(this.parent, this.currdeg);
+            this.parent.style["-webkit-transform"] = `rotateX(${this.currdeg}deg)`;
+            this.parent.style["-moz-transform"] = `rotateX(${this.currdeg}deg)`;
+            this.parent.style["-o-transform"] = `rotateX(${this.currdeg}deg)`;
+            this.parent.style["transform"] = `rotateX(${this.currdeg}deg) translateX(-50%)`;
         }
 
-        scrollX(foo) { //todo
+        rotateY(foo) { // !todo
             return [ ...foo ]
+        }
+
+        addCard() {
+            this.cards.push({
+                ok: true // !todo
+            });
         }
     }
 
-    exports.Scroll = Scroll;
-    exports.Square = Square;
-    exports.getCards = getCards;
-    exports.getParent = getParent;
-    exports.createDefaultRotation = createDefaultRotation;
-    exports.rotateX = rotateX;
-    exports.isElementInView = isElementInView;
-    exports.getScrolledCardsHeight = getScrolledCardsHeight;
-    exports.applyStyles = applyStyles;
-    exports.sleep = sleep;
+    exports.Carousel = Carousel;
+    exports.setupCarousel = setupCarousel;
+    exports.wheelHandler = wheelHandler;
+    exports.cardStyle = cardStyle;
+    exports.carouselStyle = carouselStyle;
 
     return exports;
 
