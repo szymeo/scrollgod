@@ -12,8 +12,8 @@ export default {
     plugins: [,
         resolve(),
         livereload({
-            watch: ['build/bundle.js']
+            watch: ['build']
         }),
-        serve('build')
+        serve(['build', 'examples'])
     ]
 }
