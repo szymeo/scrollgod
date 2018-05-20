@@ -42,8 +42,13 @@ function applyStyles(el, styles) {
     }
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export {
     isElementInView,
     getScrolledCardsHeight,
-    applyStyles
+    applyStyles,
+    sleep
 }

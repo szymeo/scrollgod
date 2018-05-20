@@ -88,6 +88,10 @@ var ScrollGod = (function (exports) {
         }
     }
 
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     let cardStyle = {
         'display': 'block',
         'position': 'absolute',
@@ -110,18 +114,16 @@ var ScrollGod = (function (exports) {
 
     class Square {
         constructor(options) {
+            this.options = options;
+            this.currdeg = 0;
             
             this.cards = getCards(options.elemSelector);
             this.parent = getParent(options.parentSelector);
-            this.currdeg = 0;
-            this.scrollAvailable = true;
-
-            this.parent.style.transition = `transform ${options.speed/1000}s`;
-
             this.cards.forEach((card) => applyStyles(card, { ...cardStyle, ...options.cardStyle }));
             this.parent = applyStyles(this.parent, carouselStyle);
-
             createDefaultRotation(this.cards);
+
+            this.parent.style.transition = `transform ${options.speed/1000}s`; // ill have to do sth with this
 
             window.addEventListener("wheel", (e) => {
                 this.scrollY(e, this.cards);
@@ -129,13 +131,9 @@ var ScrollGod = (function (exports) {
         }
 
         scrollY(e, cards) {
-            if (e.deltaY < 0) {
-                this.currdeg = this.currdeg - 360/cards.length;
-            }
-
-            if (e.deltaY > 0) {
-                this.currdeg = this.currdeg + 360/cards.length;
-            }
+            this.currdeg = e.deltaY < 0 ?
+                this.currdeg - 360/cards.length : 
+                this.currdeg + 360/cards.length;
 
             rotateX(this.parent, this.currdeg);
         }
@@ -154,6 +152,7 @@ var ScrollGod = (function (exports) {
     exports.isElementInView = isElementInView;
     exports.getScrolledCardsHeight = getScrolledCardsHeight;
     exports.applyStyles = applyStyles;
+    exports.sleep = sleep;
 
     return exports;
 
