@@ -1,23 +1,32 @@
 import {
     getCards,
     getParent,
-    createDefaultRotation
+    createDefaultRotation,
+    rotateX
 } from '../card'
 
 import {
     isElementInView,
-    getScrolledCardsHeight
+    getScrolledCardsHeight,
+    applyStyles
 } from '../utils'
+
+import {
+    carouselStyle,
+    cardStyle
+} from '../styles'
 
 export class Square {
     constructor(options) {
-        const defaultOptions = {
-            someopt: false
-        };
-        
         this.cards = getCards(options.elemSelector);
         this.parent = getParent(options.parentSelector)
         this.currdeg = 0;
+        this.scrollAvailable = true;
+
+        this.parent.style.transition = `transform ${options.speed/1000}s`;
+
+        this.cards.forEach((card) => applyStyles(card, { ...cardStyle, ...options.cardStyle }))
+        this.parent = applyStyles(this.parent, carouselStyle);
 
         createDefaultRotation(this.cards);
 
@@ -30,16 +39,12 @@ export class Square {
         if (e.deltaY < 0) {
             this.currdeg = this.currdeg - 360/cards.length;
         }
+
         if (e.deltaY > 0) {
             this.currdeg = this.currdeg + 360/cards.length;
-        }   
+        }
 
-        this.parent.style["-webkit-transform"] = "rotateX("+this.currdeg+"deg)"
-        this.parent.style["-moz-transform"] = "rotateX("+this.currdeg+"deg)"
-        this.parent.style["-o-transform"] = "rotateX("+this.currdeg+"deg)"
-        this.parent.style["transform"] = "rotateX("+this.currdeg+"deg)"
-        
-        console.log(this.parent.style);
+        rotateX(this.parent, this.currdeg);
     }
 
     scrollX(foo) { //todo
