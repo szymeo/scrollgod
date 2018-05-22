@@ -53,17 +53,7 @@ var ScrollGod = (function (exports) {
     }
 
     function applyStyles(el, styles) {
-        if(el instanceof Array) {
-            console.log('array');
-            el.forEach((element) => {
-                element = assignStyleToEl(element, styles);
-            });
-
-            return el
-        } else {
-            console.log('NOTarray');
-            return assignStyleToEl(el, styles)
-        }
+        return assignStyleToEl(el, styles)
     }
 
     function createDefaultRotation(cards, dir) {
